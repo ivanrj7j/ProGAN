@@ -1,6 +1,7 @@
 from src.blocks import WSConv2d, ConvBlock, PixelNorm
 import torch.nn.functional as F
 import torch.nn as nn
+from torch import tanh
 
 class Generator(nn.Module):
     """
@@ -73,7 +74,7 @@ class Generator(nn.Module):
         upscaled (torch.Tensor): Upscaled image
         out (torch.Tensor): Output tensor
         """
-        return (alpha * out) + ( (1-alpha) * upscaled )
+        return tanh((alpha * out) + ( (1-alpha) * upscaled ))
 
     def forward(self, x, steps:int, alpha:float):
         """
