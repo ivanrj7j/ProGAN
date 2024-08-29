@@ -1,9 +1,12 @@
 import torch.nn as nn
+from src.generator import Generator 
 
-class Generator(nn.Module):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+class ProGAN(nn.Module):
+    """
+    # ProGAN model
 
-class Discriminator(nn.Module):
+    This model loads a trained `Generator` and scraps the useless layers.
+    """
+    
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
