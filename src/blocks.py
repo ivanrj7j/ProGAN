@@ -64,7 +64,7 @@ class PixelNorm(nn.Module):
         return f"PixelNorm(epsilon={self.epsilon})"
 
 class WSConv2d(nn.Module):
-    def __init__(self, inChannels: int, outChannels: int, kernelSize: int, stride: int, padding: int, gain: float = 2**(1/2), *args, **kwargs) -> None:
+    def __init__(self, inChannels: int, outChannels: int, kernelSize: int, stride: int, padding: int, gain: float = 2**(1/2), device:str="cuda", *args, **kwargs) -> None:
         """
         This is a weight scaled Convolution Layer.
 
@@ -77,6 +77,7 @@ class WSConv2d(nn.Module):
         - stride (int): The stride of the convolution operation.
         - padding (int): The amount of padding added to the input.
         - gain (float, optional): The scaling factor for the weights. Defaults to sqrt(2).
+        - device (str): Device to run the model on. Defaults to "cuda".
         - args: Additional positional arguments.
         - kwargs: Additional keyword arguments.
 
@@ -86,7 +87,7 @@ class WSConv2d(nn.Module):
         super().__init__(*args, **kwargs)
 
         self.convLayer = nn.Conv2d(inChannels, outChannels, kernel_size=kernelSize, stride=stride, padding=padding)
-        self.bias = torch.zeros_like(self.convLayer.bias)
+        self.bias = torch.zeros_like(self.convLayer.bias).to(device)
         self.convLayer.bias = None
         # initializes the convlayer without bias 
 

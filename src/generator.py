@@ -23,7 +23,7 @@ class Generator(nn.Module):
         
     Each progressive heads are used as the previous layer of the rgb head.
     """
-    def __init__(self, zDim:int, channels:list[int], imageChannels:int=3, *args, **kwargs) -> None:
+    def __init__(self, zDim:int, channels:list[int], imageChannels:int=3, device:str="cuda", *args, **kwargs) -> None:
         """
         Initializes the generator.
 
@@ -31,12 +31,14 @@ class Generator(nn.Module):
         zDim (int): Dimension of the latent vector
         channels (list[int]): Number of channels of each layers.
         imageChannels (int): Number of channels in the output image. Defaults to 3.
+        device (str): Device to run the model on. Defaults to "cuda".
 
         Example:
         >>> channels = [256, 256, 256, 256, 128, 64, 32, 16, 8]
         >>> generator = Generator(128, channels, 3)
         """
         super().__init__(*args, **kwargs)
+        self.device = device
 
         self.initialProgressiveLayer = nn.Sequential(
             PixelNorm(),
@@ -64,6 +66,8 @@ class Generator(nn.Module):
             self.progressiveBlocks.append(progressiveBlock)
             self.rgbBlocks.append(rgbBlock)
             # appending the blocks to the list 
+
+        self.to(device)
 
     def fadeIn(self, alpha:float, upscaled, out):
         """
