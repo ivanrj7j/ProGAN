@@ -85,6 +85,9 @@ class WSConv2d(nn.Module):
         Nothing. This is a constructor method for the WSConv2d class. It initializes the convolution layer with the given parameters and sets the bias of the original convolution layer to None.
         """
         super().__init__(*args, **kwargs)
+        self.device = device
+        self.inChannels = inChannels
+        self.outChannels = outChannels
 
         self.convLayer = nn.Conv2d(inChannels, outChannels, kernel_size=kernelSize, stride=stride, padding=padding)
         self.bias = torch.zeros_like(self.convLayer.bias).to(device)
@@ -108,4 +111,4 @@ class WSConv2d(nn.Module):
         return x
     
     def __repr__(self):
-        return f"WSConv2d(weightScale = {'{: .3f}'.format(self.weightScale)})"
+        return f"WSConv2d(weightScale = {'{: .3f}'.format(self.weightScale)}, inChannels = {self.inChannels}, outChannels = {self.outChannels})"
