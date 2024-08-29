@@ -22,8 +22,8 @@ class ConvBlock(nn.Module):
         self.outChannels = outChannels
         # setting configuration 
 
-        self.conv1 = WSConv2d(inChannels, outChannels, kernelSize=1, stride=1, padding=1)
-        self.conv2 = WSConv2d(outChannels, outChannels, kernelSize=1, stride=1, padding=1)
+        self.conv1 = WSConv2d(inChannels, outChannels, kernelSize=3, stride=1, padding=1)
+        self.conv2 = WSConv2d(outChannels, outChannels, kernelSize=3, stride=1, padding=1)
         self.leaky = nn.LeakyReLU(0.2)
         
         if usePN:
