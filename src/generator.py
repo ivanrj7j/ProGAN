@@ -6,13 +6,15 @@ class Generator(nn.Module):
     """
     ## Generator Model
 
+    Genertor model takes in a latent vector and generates an image.
+
     Generator model is made up of 2 parts:
         
     ### RGB Heads:
         
     The RGB heads are responsible for 2 things:
     1. Acting as the output head for each size the generator produce
-    2. Acting as the input for the next Progressive Module
+    2. Acting as the input for the next RGB Module
 
     RGB heads except the last two can be dumped after training the model.
 
@@ -28,6 +30,10 @@ class Generator(nn.Module):
         zDim (int): Dimension of the latent vector
         channels (list[int]): Number of channels of each layers.
         imageChannels (int): Number of channels in the output image. Defaults to 3.
+
+        Example:
+        >>> channels = [256, 256, 256, 256, 128, 64, 32, 16, 8]
+        >>> generator = Generator(128, channels, 3)
         """
         super().__init__(*args, **kwargs)
 
