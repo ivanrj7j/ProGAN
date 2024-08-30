@@ -12,8 +12,6 @@ batchSizes = [64, 64, 64, 64, 32, 16, 8, 4]
 
 assert len(channels) == len(epochs) == len(batchSizes), "Number of epochs should be equal to the number of channels specified and batchSizes where each epoch corresponds to respective channels and batch size"
 
-print(f"[INFO] Generating and training on images of side {2**len(channels)}")
-
 lr = 1e-3
 
 latentDimension = 128
@@ -24,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 testNoise = torch.randn(8, latentDimension, 1, 1).to(device)
 # noise for benchmarking model 
 
-numWorkers = 8
+numWorkers = 3
 
 loadModels = False
 
