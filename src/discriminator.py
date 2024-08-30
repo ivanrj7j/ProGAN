@@ -83,7 +83,9 @@ class Discriminator(nn.Module):
         downscaled (torch.Tensor): Downscaled image.
         out (torch.Tensor): Output tensor
         """
-
+        if alpha == 1:
+            return out
+        
         return (alpha * out) + ( (1-alpha) * downscaled )
     
     def stdMiniBatch(self, x):

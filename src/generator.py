@@ -78,6 +78,8 @@ class Generator(nn.Module):
         upscaled (torch.Tensor): Upscaled image
         out (torch.Tensor): Output tensor
         """
+        if alpha == 1:
+            return tanh(out)
         return tanh((alpha * out) + ( (1-alpha) * upscaled ))
 
     def forward(self, x, steps:int, alpha:float):
