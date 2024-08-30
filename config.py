@@ -1,16 +1,20 @@
 import torch
 
-epochs = [50, 50, 50, 50, 40, 30, 20, 10]
+epochs = [50, 50, 50, 50, 40, 30, 20]
 # number of epochs for each progressive steps 
 
 channels = [256, 256, 256, 128, 64, 32, 16, 8] 
 # number of channels for the biggest layer in each step, the channel corresponds to respective epoch 
-#generates upto 256x256 images
 
-batchSizes = [64, 64, 64, 64, 32, 16, 8, 4] 
+batchSizes = [64, 64, 64, 32, 16, 8, 1] 
 # batchSizes corresponds to the batchSize of each resolution 
 
-assert len(channels) == len(epochs) == len(batchSizes), "Number of epochs should be equal to the number of channels specified and batchSizes where each epoch corresponds to respective channels and batch size"
+resolutions = [4, 8, 16, 32, 64, 128, 256]
+# resolutions at each epochs 
+
+assert len(epochs) == len(batchSizes) == len(resolutions), "len(channels) == len(epochs) == len(batchSizes) == len(resolutions) should be True"
+
+assert len(channels) - 1  == len(epochs), "There should be one more channel for number of epochs"
 
 lr = 1e-3
 
@@ -38,3 +42,6 @@ lambdaGP = 10
 # determines the GP weight 
 
 datasetPath = ""
+
+transitionPhases = 0.8
+# total epochs in each resolution phase in which fade in is used in fraction form
