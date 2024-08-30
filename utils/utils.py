@@ -1,6 +1,8 @@
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 from torch import Tensor
+from src import Generator, Discriminator
+import torch
 
 
 def writeSummary(writer:SummaryWriter, latentInput:Tensor, generatedImages:Tensor, genLoss:float, discLoss:float,epoch:int):
@@ -22,3 +24,47 @@ def writeSummary(writer:SummaryWriter, latentInput:Tensor, generatedImages:Tenso
     writer.add_scalar('Discriminator Loss', discLoss, global_step=epoch)
     writer.add_image('Generated Images', grid, global_step=epoch, dataformats="CHW")
     writer.add_embedding(mat=mat, label_img=generatedImages, global_step=epoch)
+
+def loadModels(generatorPath:str, discriminatorPath:str, zDim:int, channels:list[int], imageChannels:int=3, device:str="cuda"):
+    """
+    Loads the generator and discriminator from the given paths
+
+    Parameters:
+    generatorPath (str): Path to the saved generator model
+    discriminatorPath (str): Path to the saved discriminator model
+    zDim (int): Dimension of the latent vector
+    channels (list[int]): Number of channels of each layers for the generator
+    imageChannels (int): Number of channels in the output image. Defaults to 3.
+    device (str): Device to run the model on. Defaults to "cuda".
+    """
+
+    generator = Generator(zDim, channels, imageChannels, device)
+    discriminator = Discriminator(channels, imageChannels, device)
+
+    genratorWeights = torch.load(generatorPath, weights_only=False)
+    discriminatorWeights = torch.load(discriminatorPath, weights_only=False)
+
+    generator.load_state_dict(genratorWeights)
+    discriminator.load_state_dict(discriminatorWeights)
+
+    return generator, discriminator
+
+def saveModels(generator:Generator, discriminator:Discriminator, savePath:str, version:str):
+    """
+    Saves the generator and discriminator models to the given save path with the given version
+
+    Parameters:
+    generator (Generator): Generator model to save
+    discriminator (Discriminator): Discriminator model to save
+    savePath (str): Path to save the models
+    version (str): Version of the models
+
+    Example:
+    >>> saveModels(generator, discriminator, "path/to/save/models", "v1")
+
+    Saves at:
+    -   path/to/save/models/gen-v1.pth
+    -   path/to/save/models/dis-v1.pth
+    """
+    torch.save(generator.state_dict(), f"{savePath}/gen-{version}.pth")
+    torch.save(discriminator.state_dict(), f"{savePath}/dis-{version}.pth")
