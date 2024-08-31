@@ -85,7 +85,9 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
     
     alpha = 1e-4
 
+
     for epoch in range(1, epochs+1):
+        startTime = time.time()
         loop = tqdm(loader, f"[{epoch}/{epochs} alpha={round(alpha, 4)}]", len(loader), leave=False, unit="batch")
         losses = torch.zeros(2)
         for images in loop:
@@ -109,13 +111,16 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
 
         if epoch % checkpointEvery == 0:
             saveModels(generator, discriminator, checkPointPath, f"{trainPhase}-{epoch}")
+        elapsed = time.time() - startTime
+
+        print(f"[EPOCH {epoch} / {epochs}] genLoss:{'{:.3f}'.foramt(float(losses[0]))} discLoss:{'{:.3f}'.foramt(float(losses[1]))} ({round(elapsed)}s)")
 
     writer.close()
     saveModels(generator, discriminator, checkPointPath, f"{trainPhase}-{epochs}-final")
 
     return generator, discriminator
 
-def fitModel(epochs:list[int], channels:list[int], batchSizes:list[int], resolutions:list[int], lr:float, latentDimensions:int, device:str, numWorkers:int, datasetPath:str, checkPointPath:str, savedGeneratorPath:str="", savedDiscriminatorPath:str="", savePreviewEvery:int=5, lambdaGP:float|int=10, trainsitionPhases:float=0.8):
+def fitModel(epochs:list[int], channels:list[int], batchSizes:list[int], resolutions:list[int], lr:float, latentDimensions:int, device:str, numWorkers:int, datasetPath:str, checkPointPath:str, savedGeneratorPath:str="", savedDiscriminatorPath:str="", startPhase:int=4, savePreviewEvery:int=5, lambdaGP:float|int=10, trainsitionPhases:float=0.8):
     """
     Fits the model to the given dataset.
     """
@@ -130,4 +135,6 @@ def fitModel(epochs:list[int], channels:list[int], batchSizes:list[int], resolut
     # initializing generator, discriminator, scaler and optimizers 
 
     for phase, (epoch, batchSize, resolution) in enumerate(zip(epochs, batchSizes, resolutions)):
-        generator, discriminator = trainPhase(generator, discriminator, phase, epoch, batchSize, resolution, datasetPath, numWorkers, latentDimensions, scaler, genOpt, discOpt, checkPointPath, device, lambdaGP, trainsitionPhases)
+        if phase < startPhase:
+            continue
+        generator, discriminator = trainPhase(generator, discriminator, phase, epoch, batchSize, resolution, datasetPath, numWorkers, latentDimensions, scaler, genOpt, discOpt, checkPointPath, device, lambdaGP, trainsitionPhases, savePreviewEvery)
