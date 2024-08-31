@@ -43,3 +43,5 @@ datasetPath = "data/train"
 
 transitionPhases = 0.8
 # total epochs in each resolution phase in which fade in is used in fraction form
+
+startPhase = 4

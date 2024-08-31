@@ -123,7 +123,26 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
 def fitModel(epochs:list[int], channels:list[int], batchSizes:list[int], resolutions:list[int], lr:float, latentDimensions:int, device:str, numWorkers:int, datasetPath:str, checkPointPath:str, savedGeneratorPath:str="", savedDiscriminatorPath:str="", startPhase:int=4, savePreviewEvery:int=5, lambdaGP:float|int=10, trainsitionPhases:float=0.8):
     """
     Fits the model to the given dataset.
+
+    Parameters:
+    epochs (list[int]): List of epochs for each training phase
+    channels (list[int]): List of channels for each training phase
+    batchSizes (list[int]): List of batch sizes for each training phase
+    resolutions (list[int]): List of resolutions for each training phase
+    lr (float): Learning rate for both generator and discriminator
+    latentDimensions (int): Dimension of the latent vector
+    device (str): Device to use for training ("cuda" or "cpu"). Defaults to "cuda"
+    numWorkers (int): Number of workers for data loading
+    datasetPath (str): Path to the dataset
+    checkPointPath (str): Path to save the checkpoint
+    savedGeneratorPath (str): Path to load the saved generator model. Defaults to ""
+    savedDiscriminatorPath (str): Path to load the saved discriminator model. Defaults to ""
+    startPhase (int): Starting phase for training. Defaults to 4
+    savePreviewEvery (int): Determines after how many epochs to save a preview image. Defaults to 5
+    lambdaGP (float|int): Weight for gradient penalty. Defaults to 10.
+    trainsitionPhases (float): Determines the number of epochs(in fraction to total epochs) fade in effect is used. Defaults to 0.8.
     """
+    
     assert len(epochs) == len(batchSizes) == len(resolutions), "len(channels) == len(epochs) == len(batchSizes) == len(resolutions) should be True"
 
     assert len(channels) - 1  == len(epochs), "There should be one more channel for number of epochs"
