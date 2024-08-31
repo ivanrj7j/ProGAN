@@ -7,6 +7,9 @@ from utils import gradientPenalty, getDataset, writeSummary, saveModels, loadMod
 import os.path as path
 from tqdm import tqdm
 import time
+import torch.nn as nn
+
+bce = nn.BCEWithLogitsLoss()
 
 def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Generator, discriminator:Discriminator, trainPhase:int, scaler:GradScaler, alpha:float, genOpt:Adam, discOpt:Adam, device:str="cuda", lambdaGP:float|int=10):
     """
@@ -25,16 +28,23 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
     device (str): Device to use for training ("cuda" or "cpu"). Defaults to "cuda"
     lambdaGP (float|int): Weight for gradient penalty. Defaults to 10.
     """
+    
     with torch.autocast(device):
         generatedImages = generator.forward(latentNoise, trainPhase, alpha)
         discRealOutput = discriminator.forward(realImages, trainPhase, alpha)
         discFakeOutput = discriminator.forward(generatedImages.detach(), trainPhase, alpha)
-        # generating images and calculating adverserial loss 
+        # generating images and calculating adverserial loss
+
+        discReal = torch.ones_like(discRealOutput)
+        discFake = torch.zeros_like(discFakeOutput)
+
+        realLoss = bce.forward(discRealOutput, discReal)
+        fakeLoss = bce.forward(discFakeOutput, discFake)
 
         gp = gradientPenalty(discriminator, realImages, generatedImages, trainPhase, alpha, device)
         # calculating grdient penalty 
 
-        discLoss = (torch.mean(discFakeOutput) - torch.mean(discRealOutput) + (lambdaGP * gp) + (1e-3 * torch.mean(discRealOutput**2)))
+        discLoss = torch.abs(((discFakeOutput-discRealOutput)**2).mean() + (lambdaGP * gp) + (1e-3 * torch.mean(discRealOutput**2)) + realLoss + fakeLoss)
         # calculating discriminator's loss 
 
     discOpt.zero_grad()
@@ -45,7 +55,8 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
 
     with torch.autocast(device):
         genFake = discriminator.forward(generatedImages, trainPhase, alpha)
-        genLoss = -torch.mean(genFake)
+        real = torch.ones_like(genFake)
+        genLoss = bce.forward(genFake, real)
         # calculating generator's loss
 
     genOpt.zero_grad()
@@ -113,7 +124,7 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
             saveModels(generator, discriminator, checkPointPath, f"{trainPhase}-{epoch}")
         elapsed = time.time() - startTime
 
-        print(f"[EPOCH {epoch} / {epochs}] genLoss:{'{:.3f}'.foramt(float(losses[0]))} discLoss:{'{:.3f}'.foramt(float(losses[1]))} ({round(elapsed)}s)")
+        print(f"[EPOCH {epoch} / {epochs}] genLoss:{'{:.3f}'.format(float(losses[0]))} discLoss:{'{:.3f}'.format(float(losses[1]))} ({round(elapsed)}s)")
 
     writer.close()
     saveModels(generator, discriminator, checkPointPath, f"{trainPhase}-{epochs}-final")
@@ -142,7 +153,7 @@ def fitModel(epochs:list[int], channels:list[int], batchSizes:list[int], resolut
     lambdaGP (float|int): Weight for gradient penalty. Defaults to 10.
     trainsitionPhases (float): Determines the number of epochs(in fraction to total epochs) fade in effect is used. Defaults to 0.8.
     """
-    
+
     assert len(epochs) == len(batchSizes) == len(resolutions), "len(channels) == len(epochs) == len(batchSizes) == len(resolutions) should be True"
 
     assert len(channels) - 1  == len(epochs), "There should be one more channel for number of epochs"

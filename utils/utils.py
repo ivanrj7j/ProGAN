@@ -18,6 +18,7 @@ def writeSummary(writer:SummaryWriter, latentInput:Tensor, generatedImages:Tenso
     epoch (int): The current epoch number
     """
     mat = latentInput.mean(1).view(latentInput.size(0), -1)
+    generatedImages = (generatedImages / 2) + 1
     grid = make_grid(generatedImages)
 
     writer.add_scalar('Generator Loss', genLoss, global_step=epoch)
@@ -42,10 +43,12 @@ def loadModels(generatorPath:str, discriminatorPath:str, zDim:int, channels:list
     discriminator = Discriminator(channels, imageChannels, device)
 
     if generatorPath != "":
+        print(f"Loading {generatorPath}")
         genratorWeights = torch.load(generatorPath, weights_only=False)
         generator.load_state_dict(genratorWeights)
     
     if discriminatorPath != "":
+        print(f"Loading {generatorPath}")
         discriminatorWeights = torch.load(discriminatorPath, weights_only=False)
         discriminator.load_state_dict(discriminatorWeights)
 
