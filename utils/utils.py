@@ -18,7 +18,7 @@ def writeSummary(writer:SummaryWriter, latentInput:Tensor, generatedImages:Tenso
     epoch (int): The current epoch number
     """
     mat = latentInput.mean(1).view(latentInput.size(0), -1)
-    generatedImages = (generatedImages / 2) + 1
+    generatedImages = (generatedImages / 2) + 0.5
     grid = make_grid(generatedImages)
 
     writer.add_scalar('Generator Loss', genLoss, global_step=epoch)
