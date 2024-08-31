@@ -28,8 +28,6 @@ testNoise = torch.randn(8, latentDimension, 1, 1).to(device)
 
 numWorkers = 3
 
-loadModels = False
-
 savedGeneratorPath = ""
 savedDiscriminatorPath = ""
 # path to the saved generator and discriminator 
@@ -41,7 +39,7 @@ savePath = ""
 lambdaGP = 10
 # determines the GP weight 
 
-datasetPath = ""
+datasetPath = "data/train"
 
 transitionPhases = 0.8
 # total epochs in each resolution phase in which fade in is used in fraction form

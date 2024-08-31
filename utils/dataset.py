@@ -30,5 +30,14 @@ class FaceDataset(Dataset):
         return self.transforms(image)
     
 def getDataset(path:str, resolution:tuple[int, int], numWorkers:int, batchSize:int):
+    """
+    Returns a DataLoader for the FaceDataset.
+
+    Parameters:
+    path (str): Path to the dataset directory.
+    resolution (tuple[int, int]): Desired resolution of the images.
+    numWorkers (int): Number of worker processes for data loading.
+    batchSize (int): Batch size for data loading.
+    """
     dataset = FaceDataset(path, resolution)
     return DataLoader(dataset, batch_size=batchSize, shuffle=True, num_workers=numWorkers)

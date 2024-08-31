@@ -27,11 +27,11 @@ def writeSummary(writer:SummaryWriter, latentInput:Tensor, generatedImages:Tenso
 
 def loadModels(generatorPath:str, discriminatorPath:str, zDim:int, channels:list[int], imageChannels:int=3, device:str="cuda"):
     """
-    Loads the generator and discriminator from the given paths
+    Loads the generator and discriminator from the given paths if paths are provided, else loads a simple model
 
     Parameters:
-    generatorPath (str): Path to the saved generator model
-    discriminatorPath (str): Path to the saved discriminator model
+    generatorPath (str): Path to the saved generator model. Does not load any weights if path = ""
+    discriminatorPath (str): Path to the saved discriminator model. Does not load any weights if path = ""
     zDim (int): Dimension of the latent vector
     channels (list[int]): Number of channels of each layers for the generator
     imageChannels (int): Number of channels in the output image. Defaults to 3.
@@ -41,11 +41,14 @@ def loadModels(generatorPath:str, discriminatorPath:str, zDim:int, channels:list
     generator = Generator(zDim, channels, imageChannels, device)
     discriminator = Discriminator(channels, imageChannels, device)
 
-    genratorWeights = torch.load(generatorPath, weights_only=False)
-    discriminatorWeights = torch.load(discriminatorPath, weights_only=False)
+    if generatorPath != "":
+        genratorWeights = torch.load(generatorPath, weights_only=False)
+        generator.load_state_dict(genratorWeights)
+    
+    if discriminatorPath != "":
+        discriminatorWeights = torch.load(discriminatorPath, weights_only=False)
+        discriminator.load_state_dict(discriminatorWeights)
 
-    generator.load_state_dict(genratorWeights)
-    discriminator.load_state_dict(discriminatorWeights)
 
     return generator, discriminator
 
