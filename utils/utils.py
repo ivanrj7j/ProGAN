@@ -68,3 +68,29 @@ def saveModels(generator:Generator, discriminator:Discriminator, savePath:str, v
     """
     torch.save(generator.state_dict(), f"{savePath}/gen-{version}.pth")
     torch.save(discriminator.state_dict(), f"{savePath}/dis-{version}.pth")
+
+def gradientPenalty(discriminator:Discriminator, realImage:torch.Tensor, fakeImage:torch.Tensor, trainPhase:int, alpha:float, device="cuda"):
+    """
+    Calculates Gradient penalty for training
+
+    Parameters:
+    discriminator (Discriminator): Discriminator model
+    realImage (torch.Tensor): Real images tensor
+    fakeImage (torch.Tensor): Fake images tensor
+    trainPhase (int): Current training phase (1: 4x4, 2:8x8, etc)
+    alpha (float): Alpha value for fade in effect
+    device (str): Device to run the model on. Defaults to "cuda".
+    """
+
+    batchSize, channels, height, width = realImage.shape
+    beta = torch.rand((batchSize, 1, 1, 1)).repeat(1, channels, height, width).to(device)
+    interpolatedImage = (beta * realImage) + ((1 - beta) * fakeImage.detach())
+    interpolatedImage.requires_grad_(True)
+
+    mixedScore = discriminator.forward(interpolatedImage, trainPhase, alpha)
+
+    gradient = torch.autograd.grad(inputs=interpolatedImage, outputs=mixedScore, grad_outputs=torch.ones_like(mixedScore), create_graph=True, retain_graph=True)[0]
+
+    gradient = gradient.view(gradient.shape[0], -1)
+    gradientNorm = gradient.norm(p=2, dim=1)
+    return torch.mean((gradientNorm-1)**2)
