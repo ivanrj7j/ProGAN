@@ -86,7 +86,7 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
     alpha = 1e-4
 
     for epoch in range(1, epochs+1):
-        loop = tqdm(loader, f"[{epoch}/{epochs} alpha={round(alpha, 4)}]", len(loader), leave=False)
+        loop = tqdm(loader, f"[{epoch}/{epochs} alpha={round(alpha, 4)}]", len(loader), leave=False, unit="batch")
         losses = torch.zeros(2)
         for images in loop:
             realImages = images.to(device)

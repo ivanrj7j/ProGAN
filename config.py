@@ -1,6 +1,6 @@
 import torch
 
-epochs = [50, 50, 50, 50, 40, 30, 20]
+epochs = [15, 25, 50, 50, 50, 40, 25]
 # number of epochs for each progressive steps 
 
 channels = [256, 256, 256, 128, 64, 32, 16, 8] 
