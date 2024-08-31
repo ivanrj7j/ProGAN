@@ -9,8 +9,6 @@ from tqdm import tqdm
 import time
 import torch.nn as nn
 
-bce = nn.BCEWithLogitsLoss()
-
 def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Generator, discriminator:Discriminator, trainPhase:int, scaler:GradScaler, alpha:float, genOpt:Adam, discOpt:Adam, device:str="cuda", lambdaGP:float|int=10):
     """
     Performs a single training step.
@@ -35,16 +33,14 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
         discFakeOutput = discriminator.forward(generatedImages.detach(), trainPhase, alpha)
         # generating images and calculating adverserial loss
 
-        discReal = torch.ones_like(discRealOutput)
-        discFake = torch.zeros_like(discFakeOutput)
-
-        realLoss = bce.forward(discRealOutput, discReal)
-        fakeLoss = bce.forward(discFakeOutput, discFake)
-
         gp = gradientPenalty(discriminator, realImages, generatedImages, trainPhase, alpha, device)
         # calculating grdient penalty 
 
-        discLoss = torch.abs(((discFakeOutput-discRealOutput)**2).mean() + (lambdaGP * gp) + (1e-3 * torch.mean(discRealOutput**2)) + realLoss + fakeLoss)
+        discLoss =(
+                -(torch.mean(discRealOutput) - torch.mean(discFakeOutput))
+                + lambdaGP * gp
+                + (0.001 * torch.mean(discRealOutput ** 2))
+            )
         # calculating discriminator's loss 
 
     discOpt.zero_grad()
@@ -55,8 +51,7 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
 
     with torch.autocast(device):
         genFake = discriminator.forward(generatedImages, trainPhase, alpha)
-        real = torch.ones_like(genFake)
-        genLoss = bce.forward(genFake, real)
+        genLoss = -torch.mean(genFake)
         # calculating generator's loss
 
     genOpt.zero_grad()
