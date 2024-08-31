@@ -21,7 +21,7 @@ lr = 1e-3
 latentDimension = 128
 # latentDimension for initializing the input 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 testNoise = torch.randn(8, latentDimension, 1, 1).to(device)
 # noise for benchmarking model 
@@ -33,7 +33,7 @@ savedDiscriminatorPath = ""
 # path to the saved generator and discriminator 
 
 savePreviewEvery = 5
-savePath = ""
+savePath = "checkpoints"
 # determining how often and where to save the models
 
 lambdaGP = 10

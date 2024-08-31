@@ -6,6 +6,7 @@ import torch
 from utils import gradientPenalty, getDataset, writeSummary, saveModels, loadModels
 import os.path as path
 from tqdm import tqdm
+import time
 
 def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Generator, discriminator:Discriminator, trainPhase:int, scaler:GradScaler, alpha:float, genOpt:Adam, discOpt:Adam, device:str="cuda", lambdaGP:float|int=10):
     """
@@ -24,7 +25,6 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
     device (str): Device to use for training ("cuda" or "cpu"). Defaults to "cuda"
     lambdaGP (float|int): Weight for gradient penalty. Defaults to 10.
     """
-
     with torch.autocast(device):
         generatedImages = generator.forward(latentNoise, trainPhase, alpha)
         discRealOutput = discriminator.forward(realImages, trainPhase, alpha)
@@ -38,7 +38,7 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
         # calculating discriminator's loss 
 
     discOpt.zero_grad()
-    scaler.scale(discOpt).backward()
+    scaler.scale(discLoss).backward()
     scaler.step(discOpt)
     scaler.update()
     # backward propogation for disscriminator 
@@ -54,7 +54,7 @@ def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Gener
     scaler.update()
     # backward propogation for generator
 
-    return torch.tensor[genLoss.item(), discLoss.item()]
+    return torch.tensor([genLoss.item(), discLoss.item()])
 
 
 def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int, epochs:int, batchSize:int, resolution:tuple[int, int], dataPath:str, numWorkers:int, latentDimension:int, scaler:GradScaler, genOpt:Adam, discOpt:Adam, checkPointPath:str, device:str="cuda", lambdaGP:float|int=10, transitionPhaseCap:float=0.8, checkpointEvery:int=5):
@@ -80,16 +80,16 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
     transitionPhaseCap (float): Determines the number of epochs(in fraction to total epochs) fade in effect is used. Defaults to 0.8.
     checkpointEvery (int): Determines after how many epochs to save the checkpoint. Defaults to 5.
     """
-    loader = getDataset(dataPath, resolution, numWorkers, batchSize)
-    writer = SummaryWriter(path.join("runs", f"Phase-{trainPhase}"))
+    loader = getDataset(dataPath, (resolution, resolution), numWorkers, batchSize)
+    writer = SummaryWriter(path.join("runs", str(round(time.time())), f"Phase-{trainPhase}"))
     
     alpha = 1e-4
 
     for epoch in range(1, epochs+1):
         loop = tqdm(loader, f"[{epoch}/{epochs} alpha={round(alpha, 4)}]", len(loader), leave=False)
         losses = torch.zeros(2)
-        for image in loop:
-            realImages = image.to(device)
+        for images in loop:
+            realImages = images.to(device)
             latentNoise = torch.randn(((realImages.size(0), latentDimension, 1, 1)), device=device)
 
             result = trainStep(realImages, latentNoise, generator, discriminator, trainPhase, scaler, alpha, genOpt, discOpt, device, lambdaGP)
@@ -97,7 +97,7 @@ def trainPhase(generator:Generator, discriminator:Discriminator, trainPhase:int,
             resultDict = {"genLoss": float(losses[0]/epoch), "discLoss": float(losses[1]/epoch)}
             loop.set_postfix(resultDict)
 
-        losses /= len(loop)
+        losses /= len(loader)
 
 
         with torch.no_grad():
