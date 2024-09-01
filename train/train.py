@@ -7,7 +7,6 @@ from utils import gradientPenalty, getDataset, writeSummary, saveModels, loadMod
 import os.path as path
 from tqdm import tqdm
 import time
-import torch.nn as nn
 
 def trainStep(realImages:torch.Tensor, latentNoise:torch.Tensor, generator:Generator, discriminator:Discriminator, trainPhase:int, scaler:GradScaler, alpha:float, genOpt:Adam, discOpt:Adam, device:str="cuda", lambdaGP:float|int=10):
     """

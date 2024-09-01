@@ -64,7 +64,7 @@ class PixelNorm(nn.Module):
         return f"PixelNorm(epsilon={self.epsilon})"
 
 class WSConv2d(nn.Module):
-    def __init__(self, inChannels: int, outChannels: int, kernelSize: int, stride: int, padding: int, gain: float = 2**(1/2), device:str="cuda", *args, **kwargs) -> None:
+    def __init__(self, inChannels: int, outChannels: int, kernelSize: int, stride: int, padding: int, gain: float = 2, device:str="cuda", *args, **kwargs) -> None:
         """
         This is a weight scaled Convolution Layer.
 
@@ -76,7 +76,7 @@ class WSConv2d(nn.Module):
         - kernelSize (int): The size of the convolution kernel.
         - stride (int): The stride of the convolution operation.
         - padding (int): The amount of padding added to the input.
-        - gain (float, optional): The scaling factor for the weights. Defaults to sqrt(2).
+        - gain (float, optional): The scaling factor for the weights. Defaults to 2.
         - device (str): Device to run the model on. Defaults to "cuda".
         - args: Additional positional arguments.
         - kwargs: Additional keyword arguments.
@@ -94,8 +94,7 @@ class WSConv2d(nn.Module):
         self.convLayer.bias = None
         # initializes the convlayer without bias 
 
-        inputProd = torch.prod(torch.Tensor(list(self.convLayer.weight.shape[1:])))
-        self.weightScale = gain / torch.sqrt(inputProd)
+        self.weightScale = (gain / (inChannels * (kernelSize**2)))**2
         # initializing the weight scale constant 
         
         nn.init.normal_(self.convLayer.weight)

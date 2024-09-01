@@ -48,7 +48,7 @@ def loadModels(generatorPath:str, discriminatorPath:str, zDim:int, channels:list
         generator.load_state_dict(genratorWeights)
     
     if discriminatorPath != "":
-        print(f"Loading {generatorPath}")
+        print(f"Loading {discriminatorPath}")
         discriminatorWeights = torch.load(discriminatorPath, weights_only=False)
         discriminator.load_state_dict(discriminatorWeights)
 

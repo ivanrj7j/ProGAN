@@ -1,6 +1,6 @@
 import torch
 
-epochs = [15, 25, 50, 150, 100, 80, 50]
+epochs = [50, 80, 100, 200, 100, 80, 50]
 # number of epochs for each progressive steps 
 
 channels = [256, 256, 256, 128, 64, 32, 16, 8] 
@@ -44,4 +44,4 @@ datasetPath = "data/train"
 transitionPhases = 0.8
 # total epochs in each resolution phase in which fade in is used in fraction form
 
-startPhase = 4
+startPhase = 3
